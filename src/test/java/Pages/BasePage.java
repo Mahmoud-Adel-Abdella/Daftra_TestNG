@@ -33,14 +33,22 @@ public class BasePage {
 
     public String read(By locator){
         WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
-
         return element.getText();
+    }
+
+    public double readDigits(By locator){
+        return Double.parseDouble(read(locator).replaceAll("[^0-9]" , ""));
     }
 
     public void click(By locator){
         WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
         actions.moveToElement(element).perform();
         element.click();
+    }
+
+    public void waitClick(By locator){
+        WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+        click(locator);
     }
 
     public void radioRandomSelect(By locator){
@@ -68,5 +76,9 @@ public class BasePage {
     public String getAttribute (By locator , String attribute){
         WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
         return element.getAttribute(attribute);
+    }
+
+    public void navigateTo (By locator , String url){
+        driver.get(url);
     }
 }
