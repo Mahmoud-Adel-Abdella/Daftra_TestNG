@@ -27,7 +27,6 @@ public final class DataFactory {
         return fullName;
     }
 
-
     public static String getPhoneNumber() {
         return phoneNumber;
     }

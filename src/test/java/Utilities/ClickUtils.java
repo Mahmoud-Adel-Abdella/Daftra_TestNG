@@ -20,45 +20,35 @@ public class ClickUtils extends BasePage {
         JavascriptExecutor js = (JavascriptExecutor) driver;
         Actions actions = new Actions(driver);
 
-        // Helper: محاولة واحدة على العنصر الموجود في السياق الحالي
         java.util.function.Supplier<Boolean> tryClickInCurrentContext = () -> {
             try {
-                // 1) انتظار العنصر ليكون موجود وقابل للـ clickable (لو أمكن)
                 WebElement element = null;
                 try {
                     element = wait.until(ExpectedConditions.elementToBeClickable(locator));
                 } catch (Exception ignored) {
-                    // لو ما قدرناش عن طريق elementToBeClickable، نحاول وجوده فقط
                     element = wait.until(ExpectedConditions.presenceOfElementLocated(locator));
                 }
 
-                // 2) Scroll to view
                 js.executeScript("arguments[0].scrollIntoView({block: 'center', inline: 'center'});", element);
 
-                // 3) حاول click عادي أولاً
                 try {
                     element.click();
                     return true;
                 } catch (ElementClickInterceptedException | MoveTargetOutOfBoundsException e) {
-                    // لو حصل اعتراض أو المشكلة بسبب overlay/position
                 } catch (StaleElementReferenceException sere) {
-                    // العنصر تغير — نعيد المحاولة من البداية في هذه الدالة الخارجية
                     return false;
                 }
 
-                // 4) Actions move + click كخطة بديلة
                 try {
                     actions.moveToElement(element).pause(Duration.ofMillis(200)).click().perform();
                     return true;
                 } catch (Exception ignored) {}
 
-                // 5) JS click مباشر
                 try {
                     js.executeScript("arguments[0].click();", element);
                     return true;
                 } catch (Exception ignored) {}
 
-                // 6) Dispatch actual MouseEvent (أحيانًا الموقع يستمع لـ real MouseEvent)
                 try {
                     String script =
                             "const el = arguments[0];" +
@@ -68,7 +58,6 @@ public class ClickUtils extends BasePage {
                     return true;
                 } catch (Exception ignored) {}
 
-                // 7) كحل أخير: تعديل checked لو checkbox
                 try {
                     WebElement el = driver.findElement(locator);
                     String type = el.getAttribute("type");
@@ -79,18 +68,15 @@ public class ClickUtils extends BasePage {
                 } catch (Exception ignored) {}
 
             } catch (Exception e) {
-                // أي استثناء عام — نعيد false عشان نجرب سياقات أخرى (iframes)
             }
             return false;
         };
 
-        // 1) حاول في السياق الحالي
         if (tryClickInCurrentContext.get()) {
             System.out.println("✅ Click succeeded in current context for: " + locator);
             return;
         }
 
-        // 2) جرب الانتقال بين كل iframes و محاولة نفس الشيء داخل كل frame
         List<WebElement> frames = driver.findElements(By.tagName("iframe"));
         for (int i = 0; i < frames.size(); i++) {
             try {
@@ -102,13 +88,11 @@ public class ClickUtils extends BasePage {
                     return;
                 }
             } catch (Exception ignored) {
-                // لو frame رسبنا فيه، نكمل للي بعده
             } finally {
                 driver.switchTo().defaultContent();
             }
         }
 
-        // 3) جرب البحث داخل Shadow DOM باستخدام JS (محاولة عامة)
         try {
             String shadowQueryScript =
                     "function queryDeep(selector){" +
@@ -128,7 +112,6 @@ public class ClickUtils extends BasePage {
                             "  return find(document);" +
                             "}" +
                             "return queryDeep(arguments[0]);";
-            // نمرر locator كسيلكتور CSS string لو كان By.cssSelector
             String selector = locatorToCss(locator);
             if (selector != null) {
                 Object shadowEl = js.executeScript(shadowQueryScript, selector);
@@ -143,14 +126,12 @@ public class ClickUtils extends BasePage {
             }
         } catch (Exception ignored) {}
 
-        // 4) لو كل المحاولات فشلت
         System.out.println("❌ guaranteedClick FAILED for: " + locator);
     }
 
-    // Helper: حاول نحول By إلى CSS selector string لو أمكن (ترجع null لو مش CSS)
     private static String locatorToCss(By locator) {
         try {
-            String s = locator.toString(); // شكل By.cssSelector: "By.cssSelector: input[data-testid='privacy-policy-checkbox']"
+            String s = locator.toString();
             if (s.startsWith("By.cssSelector: ")) {
                 return s.replace("By.cssSelector: ", "").trim();
             }
@@ -169,44 +150,36 @@ public class ClickUtils extends BasePage {
             try {
                 WebElement element = elementParam;
 
-                // حاول التأكد إن العنصر ما زال حاضر وقابل للتفاعل قدر الإمكان
                 try {
-                    // If the element is stale, this will throw StaleElementReferenceException
                     if (!element.isDisplayed() || !element.isEnabled()) {
-                        // نسمح بمحاولة غير مباشرة ولكن لن نكرر البحث لأننا لا نملك locator هنا
                     }
-                } catch (StaleElementReferenceException sere) {
-                    return false; // العنصر تغير — caller يمكنه إعادة استدعاء مع عنصر جديد
-                } catch (Exception ignored) {}
-
-                // Scroll to view
-                try {
-                    js.executeScript("arguments[0].scrollIntoView({block: 'center', inline: 'center'});", element);
-                } catch (Exception ignored) {}
-
-                // 1) Click عادي
-                try {
-                    element.click();
-                    return true;
-                } catch (ElementClickInterceptedException | MoveTargetOutOfBoundsException e) {
-                    // اعتراض أو مشكلة موضع — نجرب البدائل
                 } catch (StaleElementReferenceException sere) {
                     return false;
                 } catch (Exception ignored) {}
 
-                // 2) Actions move + click
+                try {
+                    js.executeScript("arguments[0].scrollIntoView({block: 'center', inline: 'center'});", element);
+                } catch (Exception ignored) {}
+
+                try {
+                    element.click();
+                    return true;
+                } catch (ElementClickInterceptedException | MoveTargetOutOfBoundsException e) {
+
+                } catch (StaleElementReferenceException sere) {
+                    return false;
+                } catch (Exception ignored) {}
+
                 try {
                     actions.moveToElement(element).pause(Duration.ofMillis(200)).click().perform();
                     return true;
                 } catch (Exception ignored) {}
 
-                // 3) JS click
                 try {
                     js.executeScript("arguments[0].click();", element);
                     return true;
                 } catch (Exception ignored) {}
 
-                // 4) Dispatch actual MouseEvent
                 try {
                     String script =
                             "const el = arguments[0];" +
@@ -216,7 +189,6 @@ public class ClickUtils extends BasePage {
                     return true;
                 } catch (Exception ignored) {}
 
-                // 5) Checkbox / radio fallback
                 try {
                     String type = element.getAttribute("type");
                     if (type != null && (type.equalsIgnoreCase("checkbox") || type.equalsIgnoreCase("radio"))) {
@@ -226,12 +198,10 @@ public class ClickUtils extends BasePage {
                 } catch (Exception ignored) {}
 
             } catch (Exception e) {
-                // أي استثناء عام — نعيد false
             }
             return false;
         };
 
-        // نجرب في السياق الحالي فقط (لا نستطيع التنقل بين iframes بدون locator)
         if (tryClickInCurrentContext.get()) {
             System.out.println("✅ Click succeeded in current context for WebElement");
             return;

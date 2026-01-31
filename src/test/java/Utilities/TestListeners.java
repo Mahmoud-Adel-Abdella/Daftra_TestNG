@@ -47,7 +47,7 @@ public class TestListeners extends BaseTest implements ITestListener {
         ExtentManger.getTest().log(Status.FAIL, "❎❎ Test Failed ❎❎: " + result.getThrowable());
 
         try {
-            String screenShotPath = screenShot(result.getName());
+            String screenShotPath = screenShot(driver, result.getName());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

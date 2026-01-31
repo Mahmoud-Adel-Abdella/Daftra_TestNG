@@ -7,6 +7,7 @@ import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import com.aventstack.extentreports.reporter.configuration.Theme;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,7 +38,7 @@ public class ExtentManger extends BaseTest {
         }
     }
 
-    public static String screenShot(String testName) throws IOException {
+    public static String screenShot(WebDriver driver, String testName) throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         String path = System.getProperty("user.dir") + "/ScreenShots/" + testName + "_" + timeStamp + ".png";
 
@@ -49,6 +50,7 @@ public class ExtentManger extends BaseTest {
 
         return path;
     }
+
 
     public static void createTest(String testName){
         extentTest = extentReports.createTest(testName);

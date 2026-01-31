@@ -18,16 +18,15 @@ public class BasePage {
     protected static WebDriver driver;
     protected static WebDriverWait wait;
     protected Actions actions;
-    protected Faker faker;
 
+    //Constructor
     public BasePage(WebDriver driver) {
         BasePage.driver = driver;
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         actions = new Actions(driver);
-        faker = new Faker();
-//        PageFactory.initElements(driver, this);
     }
 
+    //Methods
     public void write(By locator, String text) throws InterruptedException {
         WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
         element.clear();
@@ -85,7 +84,7 @@ public class BasePage {
             WebDriverWait driverWait = new WebDriverWait(driver, Duration.ofSeconds(3));
             WebElement element = driverWait.until(ExpectedConditions.visibilityOfElementLocated(locator));
             click(element);
-        } catch (TimeoutException e) {
+        } catch (TimeoutException _) {
         }
     }
 

@@ -12,39 +12,42 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 import java.time.Duration;
 
 public class BaseTest {
-    // Globals
-    protected static WebDriver driver;
+
+    protected WebDriver driver;
     protected SoftAssert softAssert;
     protected Faker faker;
 
-    @BeforeMethod(alwaysRun = true)
+    @BeforeClass(alwaysRun = true)
     public void setUp() {
-        // setup chromedriver
         WebDriverManager.chromedriver().setup();
 
-        // 1) Create driver
-        driver = new ChromeDriver();
+        WebDriver originalDriver = new ChromeDriver();
 
-        // 2) Decorate with listeners
         WebDriverListeners myListeners = new WebDriverListeners();
-        driver = new EventFiringDecorator(myListeners).decorate(driver);
+        driver = new EventFiringDecorator(myListeners).decorate(originalDriver);
 
-        // 3) common setup
         driver.manage().window().maximize();
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-
-        // 4) test helpers
-        faker = new Faker();
-        softAssert = new SoftAssert();
-
-        // 5) open page
-        driver.get("https://almatar.com/en/");
+        driver.get("https://example.com");
     }
 
-    @AfterMethod(alwaysRun = true)
-    public void tearDown() {
+    @BeforeMethod
+    public void testUp() {
+        faker = new Faker();
+        softAssert = new SoftAssert();
+    }
+
+    @AfterMethod
+    public void afterMethod() {
         softAssert.assertAll();
-        driver.quit();
-        driver = null;
+        driver.manage().deleteAllCookies();
+        driver.navigate().refresh();
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void finish() {
+        if (driver != null) {
+            driver.quit();
+        }
     }
 }
