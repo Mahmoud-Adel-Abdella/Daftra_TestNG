@@ -17,30 +17,28 @@ public class BaseTest {
     protected SoftAssert softAssert;
     protected Faker faker;
 
-    @BeforeClass(alwaysRun = true)
-    public void setUp() {
+    @BeforeMethod(alwaysRun = true)
+    public void setUpTest() {
         WebDriverManager.chromedriver().setup();
-
         WebDriver originalDriver = new ChromeDriver();
-
         WebDriverListeners myListeners = new WebDriverListeners();
         driver = new EventFiringDecorator(myListeners).decorate(originalDriver);
 
         driver.manage().window().maximize();
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-        driver.get("https://www.automationexercise.com/login");
-    }
+        driver.get("https://www.daftra.com/");
 
-    @BeforeMethod
-    public void testUp() {
         faker = new Faker();
         softAssert = new SoftAssert();
     }
 
     @AfterMethod(alwaysRun = true)
-    public void afterMethod() {
+    public void tearDown() {
+        softAssert.assertAll();
+
         if (driver != null) {
             driver.quit();
         }
     }
+
 }

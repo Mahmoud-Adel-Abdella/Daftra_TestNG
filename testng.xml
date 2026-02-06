@@ -4,12 +4,18 @@
     <listeners>
         <listener class-name="Utilities.TestListeners" />
     </listeners>
-    <test verbose="2" preserve-order="true"
-          name="D:/IdeaProjects/Automation-Testing-Framwork-TestNG/src/test/java/Tests/LoginTest.java">
+    <test verbose="2" preserve-order="true" name="D:/IdeaProjects/Daftra_TestNG/src/test/java/Pages/LoginPage.java">
         <classes>
+            <class name="Tests.RegisterTest">
+                <methods>
+                    <include name="registerTest"/>
+                </methods>
+            </class>
             <class name="Tests.LoginTest">
                 <methods>
-                    <include name="loginTest"/>
+                    <include name="validLoginTest"/>
+                    <include name="invalidLoginTest"/>
+                    <include name="invalidSecurityCodeValidation"/>
                 </methods>
             </class>
         </classes>

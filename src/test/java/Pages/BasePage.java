@@ -27,10 +27,9 @@ public class BasePage {
     }
 
     //Methods
-    public void write(By locator, String text) throws InterruptedException {
+    public void write(By locator, String text) {
         WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
         element.clear();
-        Thread.sleep(200);
         element.sendKeys(text);
     }
 
@@ -110,6 +109,22 @@ public class BasePage {
         selects.selectByIndex(randomIndex);
     }
 
+    public void selectCustomDropdown(By locator, String value) {
+        WebElement input = driver.findElement(locator);
+        try {
+            input.click();
+
+            input.clear();
+            input.sendKeys(value);
+
+            actions.sendKeys(Keys.ENTER).perform();
+
+        } catch (Exception e) {
+            System.out.println("❌ Failed to select value '" + value + "' from custom dropdown");
+            e.printStackTrace();
+        }
+    }
+
     public void dropdownIndexSelect(By locator, int index) {
         WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
         Select selects = new Select(element);
@@ -131,7 +146,7 @@ public class BasePage {
         if (currentURL.equals(url)) {
             System.out.println("Navigated Successfully to : " + url);
         } else {
-            System.out.println("URL mismatch!...");
+            System.out.println("loginPageURL mismatch!...");
         }
     }
 
@@ -242,5 +257,39 @@ public class BasePage {
         }
 
         return values;
+    }
+
+    public static boolean isTextExists(
+            By listLocator,
+            int index,
+            String expectedText
+    ) {
+        List<WebElement> elements = driver.findElements(listLocator);
+
+        if (elements.isEmpty()) return false;
+
+        if (index >= 0) {
+            if (index >= elements.size()) return false;
+            return elements.get(index).getText().contains(expectedText);
+        }
+
+        // index = -1 → search in all
+        for (WebElement element : elements) {
+            if (element.getText().contains(expectedText)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean checkPageContains(String text){
+        String locator = "//*[normalize-space()='"+text+"']";
+
+        return driver.findElement(By.xpath(locator)).getText().contains(text);
+    };
+
+    public boolean checkDisplayed(By locator ){
+        WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+        return  element.isDisplayed();
     }
 }
